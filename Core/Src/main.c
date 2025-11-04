@@ -34,10 +34,6 @@ PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
 
-double Vin;
-int secret = 50;
-int proposal;
-int score;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,32 +89,21 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+
+
   while (1)
   {
-  HAL_ADC_Start(&hadc);
-  HAL_ADC_PollForConversion(&hadc,HAL_MAX_DELAY);
-  Vin=HAL_ADC_GetValue(&hadc)*3./4096.0;
-  proposal = HAL_ADC_GetValue(&hadc) * 100 / 4095;  // Direct mapping: 0-4095 ADC → 0-100
-  HAL_Delay(1);
+	  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) {
+			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			  HAL_Delay(2500);
 
-  if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET) {
-    int distance = (proposal > secret) ? (proposal - secret) : (secret - proposal);
-    
-    if (distance >= 10) {
-      HAL_GPIO_WritePin(GPIOC, LD4_Pin, GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOC, LD5_Pin, GPIO_PIN_RESET);
-      score++;
-    } else {
-      HAL_GPIO_WritePin(GPIOC, LD5_Pin, GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOC, LD4_Pin, GPIO_PIN_RESET);
-    }
-    
-    while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET) {
-      HAL_Delay(10);
-    }
-    HAL_Delay(50);
-  }
+	  }
+	  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) != GPIO_PIN_SET) {
+		  HAL_Delay(2500);
+			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
 
+	  }
   }
 
     /* USER CODE END WHILE */
@@ -434,12 +419,12 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, NCS_MEMS_SPI_Pin|EXT_RESET_Pin|LD3_Pin|LD6_Pin
+  HAL_GPIO_WritePin(GPIOC, NCS_MEMS_SPI_Pin|EXT_RESET_Pin|GPIO_PIN_6|LD6_Pin
                           |LD4_Pin|LD5_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : NCS_MEMS_SPI_Pin EXT_RESET_Pin LD3_Pin LD6_Pin
+  /*Configure GPIO pins : NCS_MEMS_SPI_Pin EXT_RESET_Pin PC6 LD6_Pin
                            LD4_Pin LD5_Pin */
-  GPIO_InitStruct.Pin = NCS_MEMS_SPI_Pin|EXT_RESET_Pin|LD3_Pin|LD6_Pin
+  GPIO_InitStruct.Pin = NCS_MEMS_SPI_Pin|EXT_RESET_Pin|GPIO_PIN_6|LD6_Pin
                           |LD4_Pin|LD5_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -452,11 +437,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : B1_Pin */
-  GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
+  /*Configure GPIO pin : PA0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
   /* USER CODE END MX_GPIO_Init_2 */
